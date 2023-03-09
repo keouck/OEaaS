@@ -1,11 +1,16 @@
 from fastapi import FastAPI
+from keras.models import load_model
+from numpy import argmax
+
+model = load_model('accurate.h5')
+classes = ['Odd', 'Even']
 
 app = FastAPI()
 
-@app.get("/is-odd/{number}")
-async def is_odd(number: float):
-    return {number: True if number % 2 != 0 else False}
+def predict_target(number, model, classes): 
+    pred = model.predict([number]) 
+    return classes[int(argmax(pred, axis=1))] 
 
-@app.get("/is-even/{number}")
-async def is_even(number: float):
-    return {number: True if number % 2 == 0 else False}
+@app.get("/check/{number}")
+async def check(number: float):
+    return {number: predict_target(number, model, classes)}
